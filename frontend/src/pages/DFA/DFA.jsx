@@ -5,7 +5,7 @@ import { Play, RotateCcw, SkipBack, SkipForward, Download, Settings, Save, Uploa
 import { Card, CardContent } from '../../components/cards/Card';
 import Button from '../../components/buttons/Button';
 import { Input } from '../../components/forms/Input';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { cn } from '../../utils/cn';
 import { AutomataEngine } from '../../services/simulation/dfaEngine';
 
@@ -104,8 +104,8 @@ export default function DFA() {
             <aside className="w-full lg:w-[360px] flex-shrink-0 border-r border-border bg-white dark:bg-card-dark overflow-y-auto flex flex-col">
                 <div className="p-4 border-b border-border sticky top-0 bg-white/95 dark:bg-card-dark/95 backdrop-blur-sm z-10 flex justify-between items-center">
                     <div>
-                        <h2 className="font-bold text-base text-text-primary">DFA / NFA Simulator</h2>
-                        <p className="text-xs text-text-secondary mt-0.5">Build & simulate Finite Automata</p>
+                        <h2 className="font-bold text-base text-text-primary dark:text-white">DFA / NFA Simulator</h2>
+                        <p className="text-xs text-text-secondary dark:text-slate-300 mt-0.5">Build & simulate Finite Automata</p>
                     </div>
                     <div className="flex gap-1">
                         <Button variant="ghost" size="icon" title="Save"><Save size={15} /></Button>
@@ -118,14 +118,14 @@ export default function DFA() {
                         <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3">Formal Definition</h3>
                         <div className="space-y-3">
                             <div>
-                                <label className="text-xs font-semibold text-text-secondary mb-1 block">Input Alphabet (Σ)</label>
+                                <label className="text-xs font-semibold text-text-secondary dark:text-slate-300 mb-1 block">Input Alphabet (Σ)</label>
                                 <Input value={alphabet} onChange={e => setAlphabet(e.target.value)} placeholder="e.g. a, b" className="h-9 font-mono" />
                                 <p className="text-[11px] text-text-secondary mt-1">Separate symbols with commas</p>
                             </div>
 
                             <div>
                                 <div className="flex justify-between items-center mb-2">
-                                    <label className="text-xs font-semibold text-text-secondary">States (Q)</label>
+                                    <label className="text-xs font-semibold text-text-secondary dark:text-slate-300 mb-1 block">States (Q)</label>
                                     <Button variant="ghost" size="xs" onClick={() => {
                                         const id = `q${nodes.length}`;
                                         setNodes(ns => [...ns, { id, position: { x: 120 + nodes.length * 200, y: 160 }, data: { label: id }, style: { background: '#fff', border: '2px solid #6B7280', borderRadius: '50%', width: 64, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 } }]);
@@ -141,13 +141,13 @@ export default function DFA() {
                                         </div>
                                     ))}
                                 </div>
-                                <p className="text-[11px] text-text-secondary mt-2">Add ★ to node label to mark it as a final state. E.g. <span className="font-mono">q1 ★</span></p>
+                                <p className="text-[11px] text-text-secondary dark:text-slate-400 mt-2">Add ★ to node label to mark it as a final state. E.g. <span className="font-mono">q1 ★</span></p>
                             </div>
                         </div>
                     </section>
 
                     <section>
-                        <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3">Transition Table (δ)</h3>
+                        <h3 className="text-xs font-bold text-text-secondary dark:text-slate-400 uppercase tracking-widest mb-3">Transition Table (δ)</h3>
                         <div className="overflow-x-auto border border-border rounded-lg">
                             <table className="w-full text-xs text-left">
                                 <thead className="text-text-secondary bg-gray-50 dark:bg-slate-900/50 uppercase">
@@ -161,7 +161,7 @@ export default function DFA() {
                                 <tbody>
                                     {nodes.map((n, i) => (
                                         <tr key={n.id} className={cn("border-b border-border last:border-0", activeState.includes(n.id) ? "bg-primary/5" : "bg-white dark:bg-card-dark")}>
-                                            <td className="px-3 py-2 font-mono font-bold text-text-primary">{i === 0 ? '→ ' : ''}{n.data.label}</td>
+                                            <td className="px-3 py-2 font-mono font-bold text-text-primary dark:text-white">{i === 0 ? '→ ' : ''}{n.data.label}</td>
                                             {alphabet.split(',').map(s => s.trim()).filter(Boolean).map(sym => {
                                                 const edge = edges.find(e => e.source === n.id && e.label && e.label.split(',').map(x => x.trim()).includes(sym));
                                                 return <td key={sym} className="px-3 py-2 font-mono text-text-secondary">{edge ? edge.target : '–'}</td>;
@@ -192,28 +192,26 @@ export default function DFA() {
                     </div>
 
                     {/* Result Badge */}
-                    <AnimatePresence>
-                        {simResult && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 8, scale: 0.95 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.9 }}
-                                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                                className={cn(
-                                    "flex items-center gap-3 p-3 rounded-lg border font-semibold text-sm",
-                                    simResult.accepted
-                                        ? "bg-success/10 border-success/30 text-success"
-                                        : "bg-danger/10 border-danger/30 text-danger"
-                                )}
-                            >
-                                {simResult.accepted ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
-                                <div>
-                                    <div>{simResult.accepted ? 'String Accepted ✓' : 'String Rejected ✗'}</div>
-                                    <div className="text-xs font-normal opacity-80 mt-0.5">{simResult.reason}</div>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                    {simResult && (
+                        <motion.div
+                            key={simResult.accepted ? 'accepted' : 'rejected'}
+                            initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                            className={cn(
+                                "flex items-center gap-3 p-3 rounded-lg border font-semibold text-sm",
+                                simResult.accepted
+                                    ? "bg-green-50 dark:bg-green-900/20 border-green-300 text-green-700 dark:text-green-400"
+                                    : "bg-red-50 dark:bg-red-900/20 border-red-300 text-red-700 dark:text-red-400"
+                            )}
+                        >
+                            {simResult.accepted ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
+                            <div>
+                                <div>{simResult.accepted ? 'String Accepted ✓' : 'String Rejected ✗'}</div>
+                                <div className="text-xs font-normal opacity-80 mt-0.5">{simResult.reason}</div>
+                            </div>
+                        </motion.div>
+                    )}
                 </div>
             </aside>
 
@@ -239,12 +237,10 @@ export default function DFA() {
                 </ReactFlow>
 
                 {/* Execution Timeline Bar */}
-                <AnimatePresence>
                     {timeline.length > 0 && (
                         <motion.div
                             initial={{ opacity: 0, y: 60 }}
                             animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 60 }}
                             transition={{ type: 'spring', stiffness: 200, damping: 25 }}
                             className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[90%] max-w-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl p-4 shadow-soft-lg border border-border"
                         >
@@ -269,7 +265,6 @@ export default function DFA() {
                             </div>
                         </motion.div>
                     )}
-                </AnimatePresence>
             </main>
         </div>
     );
