@@ -384,7 +384,7 @@ export default function Home() {
                         <Link to="/dfa">
                             <Button size="lg" className="w-full sm:w-auto">Get Started for Free</Button>
                         </Link>
-                        <a href="https://github.com" target="_blank" rel="noreferrer">
+                        <a href="https://github.com/rizkihsn/tbo-capstone-301240071.git" target="_blank" rel="noreferrer">
                             <Button variant="outline" size="lg" startIcon={<Github size={18} />} className="w-full sm:w-auto bg-surface">View on GitHub</Button>
                         </a>
                     </div>

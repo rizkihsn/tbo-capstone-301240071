@@ -116,7 +116,7 @@ export default function MainLayout() {
                                 {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
                             </button>
                             <a
-                                href="https://github.com"
+                                href="https://github.com/rizkihsn/tbo-capstone-301240071.git"
                                 target="_blank"
                                 rel="noreferrer"
                                 className="p-2 rounded-md text-text-secondary hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
@@ -199,7 +199,7 @@ export default function MainLayout() {
                                 A premium educational platform for building, simulating, and visualizing Automata Theory and Formal Languages.
                             </p>
                             <div className="flex space-x-4">
-                                <a href="#" className="text-text-secondary hover:text-primary transition-colors p-1 -ml-1"><Github size={20} /></a>
+                                <a href="https://github.com/rizkihsn/tbo-capstone-301240071.git" target="_blank" rel="noreferrer" className="text-text-secondary hover:text-primary transition-colors p-1 -ml-1"><Github size={20} /></a>
                             </div>
                         </div>
                         <div>

@@ -83,11 +83,9 @@ export default function About() {
                     <div className="grid grid-cols-2 gap-6">
                         <Card className="bg-primary/5 border-none shadow-none">
                             <CardContent className="p-6">
-                                <div className="flex gap-4">
-                                    <a href="https://github.com/rizkihsn/tbo-capstone-301240071.git" target="_blank" rel="noreferrer" className="p-2 bg-gray-100 dark:bg-slate-800 rounded-md hover:text-primary transition-colors"><Github size={18} /></a>
-                                    <a href="#" className="p-2 bg-gray-100 dark:bg-slate-800 rounded-md hover:text-primary transition-colors"><Twitter size={18} /></a>
-                                    <a href="#" className="p-2 bg-gray-100 dark:bg-slate-800 rounded-md hover:text-primary transition-colors"><Mail size={18} /></a>
-                                </div>
+                                <Laptop className="text-primary mb-4" size={32} />
+                                <h3 className="font-semibold mb-2">Visual Learning</h3>
+                                <p className="text-sm text-text-secondary">Interactive graphs replace static diagrams.</p>
                             </CardContent>
                         </Card>
                         <Card className="bg-secondary/5 border-none shadow-none">
