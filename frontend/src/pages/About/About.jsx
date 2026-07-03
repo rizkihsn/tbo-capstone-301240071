@@ -40,15 +40,15 @@ export default function About() {
             {/* Hero Section */}
             <section className="relative pt-32 pb-20 overflow-hidden flex-center bg-gray-50 dark:bg-slate-900/50">
                 <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-6"
                     >
                         <Globe size={14} /> About AutomataLab
                     </motion.div>
-                    
-                    <motion.h1 
+
+                    <motion.h1
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
@@ -56,8 +56,8 @@ export default function About() {
                     >
                         Democratizing Theoretical <br />Computer Science.
                     </motion.h1>
-                    
-                    <motion.p 
+
+                    <motion.p
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
@@ -83,9 +83,11 @@ export default function About() {
                     <div className="grid grid-cols-2 gap-6">
                         <Card className="bg-primary/5 border-none shadow-none">
                             <CardContent className="p-6">
-                                <Laptop className="text-primary mb-4" size={32} />
-                                <h3 className="font-semibold mb-2">Visual Learning</h3>
-                                <p className="text-sm text-text-secondary">Interactive graphs replace static diagrams.</p>
+                                <div className="flex gap-4">
+                                    <a href="https://github.com/rizkihsn/tbo-capstone-301240071.git" target="_blank" rel="noreferrer" className="p-2 bg-gray-100 dark:bg-slate-800 rounded-md hover:text-primary transition-colors"><Github size={18} /></a>
+                                    <a href="#" className="p-2 bg-gray-100 dark:bg-slate-800 rounded-md hover:text-primary transition-colors"><Twitter size={18} /></a>
+                                    <a href="#" className="p-2 bg-gray-100 dark:bg-slate-800 rounded-md hover:text-primary transition-colors"><Mail size={18} /></a>
+                                </div>
                             </CardContent>
                         </Card>
                         <Card className="bg-secondary/5 border-none shadow-none">
@@ -106,7 +108,7 @@ export default function About() {
                     <p className="text-text-secondary mb-16 max-w-2xl mx-auto">
                         AutomataLab is built on a modern, scalable stack ensuring zero-latency client-side simulations with a robust Python backend for complex graph validations.
                     </p>
-                    
+
                     <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
                         <ArchitectNode title="React 19 + Vite" icon={Code2} delay={0.1} />
                         <div className="w-1 h-8 md:w-8 md:h-1 bg-border rounded" />
@@ -124,80 +126,49 @@ export default function About() {
                 <div className="max-w-3xl mx-auto px-4">
                     <h2 className="text-h3 font-bold mb-12 text-center">Development Roadmap</h2>
                     <div className="ml-4 md:ml-0">
-                        <RoadmapItem 
-                            phase="1" 
+                        <RoadmapItem
+                            phase="1"
                             status="Completed"
-                            title="Core Simulation Engine" 
+                            title="Core Simulation Engine"
                             items={[
                                 "Interactive DFA & NFA Simulator",
                                 "Basic Regex Tester",
                                 "React Flow Graph Visualization"
-                            ]} 
+                            ]}
                         />
-                        <RoadmapItem 
-                            phase="2" 
+                        <RoadmapItem
+                            phase="2"
                             status="In Progress"
-                            title="Advanced Algorithms" 
+                            title="Advanced Algorithms"
                             items={[
                                 "Pushdown Automata (PDA) Stack Visualizer",
                                 "CFG to CNF Step-by-step Converter",
                                 "DFA Minimization Visualizer"
-                            ]} 
+                            ]}
                         />
-                        <RoadmapItem 
-                            phase="3" 
+                        <RoadmapItem
+                            phase="3"
                             status="Planned"
-                            title="Backend & Cloud Features" 
+                            title="Backend & Cloud Features"
                             items={[
                                 "User Authentication & Profiles",
                                 "Cloud Save for Automata Models",
                                 "REST API for bulk validations"
-                            ]} 
+                            ]}
                         />
-                        <RoadmapItem 
-                            phase="4" 
+                        <RoadmapItem
+                            phase="4"
                             status="Planned"
-                            title="AI Learning Assistant" 
+                            title="AI Learning Assistant"
                             items={[
                                 "AI-driven Regex explanation",
                                 "Step-by-step hint system for PDA construction",
                                 "Automated grading for academic assignments"
-                            ]} 
+                            ]}
                         />
                     </div>
                 </div>
-            </section>
-
-            {/* Developer Profile */}
-            <section className="py-20 bg-gray-50 dark:bg-slate-900/50">
-                <div className="max-w-7xl mx-auto px-4 text-center">
-                    <h2 className="text-h3 font-bold mb-12">Meet the Developer</h2>
-                    <div className="flex justify-center">
-                        <Card className="max-w-md w-full text-left">
-                            <CardContent className="p-8">
-                                <div className="flex items-center gap-6 mb-6">
-                                    <div className="w-20 h-20 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center overflow-hidden">
-                                        <Users size={32} className="text-slate-400" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-xl font-bold text-text-primary">AutomataLab Team</h3>
-                                        <p className="text-sm text-text-secondary">Lead Software Engineer</p>
-                                        <p className="text-xs text-text-secondary mt-1">Computer Science Department</p>
-                                    </div>
-                                </div>
-                                <p className="text-sm text-text-secondary mb-6 leading-relaxed">
-                                    Passionate about bridging the gap between abstract computer science mathematics and intuitive visual learning. Built AutomataLab to help peers understand PDA stacks and CFG grammar rules without the headache.
-                                </p>
-                                <div className="flex gap-4">
-                                    <a href="#" className="p-2 bg-gray-100 dark:bg-slate-800 rounded-md hover:text-primary transition-colors"><Github size={18} /></a>
-                                    <a href="#" className="p-2 bg-gray-100 dark:bg-slate-800 rounded-md hover:text-primary transition-colors"><Twitter size={18} /></a>
-                                    <a href="#" className="p-2 bg-gray-100 dark:bg-slate-800 rounded-md hover:text-primary transition-colors"><Mail size={18} /></a>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-                </div>
-            </section>
-        </div>
+            </section >
+        </div >
     );
 }

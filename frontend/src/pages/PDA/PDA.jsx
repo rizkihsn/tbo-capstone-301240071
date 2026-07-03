@@ -1,16 +1,16 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { ReactFlow, Controls, Background, MiniMap, addEdge, applyNodeChanges, applyEdgeChanges, Panel } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Layers, Play, Plus, Trash2, ArrowRight, CheckCircle2, XCircle, RefreshCw, SkipBack, SkipForward } from 'lucide-react';
+import { Layers, Play, Plus, Trash2, ArrowRight, CheckCircle2, XCircle, RefreshCw, SkipBack, SkipForward, Edit2, Check, X, Save } from 'lucide-react';
 import Button from '../../components/buttons/Button';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../utils/cn';
 
 const defaultTransitions = [
     { id: 1, from: 'q0', input: 'a', stackTop: 'Z0', toState: 'q0', pushSymbols: 'AZ0' },
-    { id: 2, from: 'q0', input: 'a', stackTop: 'A',  toState: 'q0', pushSymbols: 'AA' },
-    { id: 3, from: 'q0', input: 'b', stackTop: 'A',  toState: 'q1', pushSymbols: 'ε' },
-    { id: 4, from: 'q1', input: 'b', stackTop: 'A',  toState: 'q1', pushSymbols: 'ε' },
+    { id: 2, from: 'q0', input: 'a', stackTop: 'A', toState: 'q0', pushSymbols: 'AA' },
+    { id: 3, from: 'q0', input: 'b', stackTop: 'A', toState: 'q1', pushSymbols: 'ε' },
+    { id: 4, from: 'q1', input: 'b', stackTop: 'A', toState: 'q1', pushSymbols: 'ε' },
     { id: 5, from: 'q1', input: 'ε', stackTop: 'Z0', toState: 'q2', pushSymbols: 'Z0' },
 ];
 
@@ -37,11 +37,180 @@ const initialNodes = [
 
 const initialEdges = [
     { id: 'e1', source: 'q0', target: 'q0', label: 'a,Z0/AZ0', type: 'self', style: { stroke: '#2563EB', strokeWidth: 2 } },
-    { id: 'e2', source: 'q0', target: 'q0', label: 'a,A/AA',   type: 'self', style: { stroke: '#2563EB', strokeWidth: 2 } },
-    { id: 'e3', source: 'q0', target: 'q1', label: 'b,A/ε',    animated: false, style: { stroke: '#7C3AED', strokeWidth: 2 } },
-    { id: 'e4', source: 'q1', target: 'q1', label: 'b,A/ε',    type: 'self', style: { stroke: '#7C3AED', strokeWidth: 2 } },
-    { id: 'e5', source: 'q1', target: 'q2', label: 'ε,Z0/Z0',  animated: false, style: { stroke: '#22C55E', strokeWidth: 2 } },
+    { id: 'e2', source: 'q0', target: 'q0', label: 'a,A/AA', type: 'self', style: { stroke: '#2563EB', strokeWidth: 2 } },
+    { id: 'e3', source: 'q0', target: 'q1', label: 'b,A/ε', animated: false, style: { stroke: '#7C3AED', strokeWidth: 2 } },
+    { id: 'e4', source: 'q1', target: 'q1', label: 'b,A/ε', type: 'self', style: { stroke: '#7C3AED', strokeWidth: 2 } },
+    { id: 'e5', source: 'q1', target: 'q2', label: 'ε,Z0/Z0', animated: false, style: { stroke: '#22C55E', strokeWidth: 2 } },
 ];
+
+// ─── Run simulation against transitions ──────────────────────────────────────
+function runPDASimulation(testString, transitions, acceptMode) {
+    const demoTimeline = [];
+    const chars = testString === '' ? [] : testString.split('');
+    let currentStack = ['Z0'];
+    let rejected = false;
+    let currentState = 'q0';
+
+    demoTimeline.push({
+        step: 0, state: 'q0', symbol: null,
+        stackSnapshot: [...currentStack],
+        action: 'Initial configuration — stack: [Z0]'
+    });
+
+    for (let i = 0; i < chars.length; i++) {
+        const ch = chars[i];
+        // Find matching transition
+        const tr = transitions.find(t =>
+            t.from === currentState && t.input === ch && currentStack[0] === t.stackTop
+        );
+        if (!tr) {
+            rejected = true;
+            demoTimeline.push({
+                step: i + 1, state: currentState, symbol: ch,
+                stackSnapshot: [...currentStack],
+                action: `No transition for (${currentState}, '${ch}', ${currentStack[0]}) → REJECT`
+            });
+            break;
+        }
+        // Apply transition
+        currentState = tr.toState;
+        currentStack = currentStack.slice(1); // pop stack top
+        if (tr.pushSymbols !== 'ε' && tr.pushSymbols !== '') {
+            // push symbols left-to-right onto stack (top = first char)
+            const toPush = tr.pushSymbols.split('').reverse();
+            currentStack = [...tr.pushSymbols.split(''), ...currentStack];
+        }
+        demoTimeline.push({
+            step: i + 1, state: currentState, symbol: ch,
+            stackSnapshot: [...currentStack],
+            action: `Read '${ch}' (${tr.from},${tr.input},${tr.stackTop}) → (${tr.toState},${tr.pushSymbols})`
+        });
+    }
+
+    // Check ε-transitions after input
+    if (!rejected) {
+        let changed = true;
+        while (changed) {
+            changed = false;
+            const epsTr = transitions.find(t =>
+                t.from === currentState && t.input === 'ε' && currentStack[0] === t.stackTop
+            );
+            if (epsTr) {
+                currentState = epsTr.toState;
+                currentStack = currentStack.slice(1);
+                if (epsTr.pushSymbols !== 'ε' && epsTr.pushSymbols !== '') {
+                    currentStack = [...epsTr.pushSymbols.split(''), ...currentStack];
+                }
+                demoTimeline.push({
+                    step: demoTimeline.length, state: currentState, symbol: 'ε',
+                    stackSnapshot: [...currentStack],
+                    action: `ε-transition (${epsTr.from},ε,${epsTr.stackTop}) → (${epsTr.toState},${epsTr.pushSymbols})`
+                });
+                changed = true;
+            }
+        }
+    }
+
+    const accepted = !rejected && (
+        acceptMode === 'empty_stack'
+            ? (currentStack.length === 0 || (currentStack.length === 1 && currentStack[0] === 'Z0'))
+            : currentState.includes('★') || currentState === 'q2'
+    );
+
+    if (!rejected) {
+        demoTimeline.push({
+            step: demoTimeline.length, state: currentState, symbol: null,
+            stackSnapshot: [...currentStack],
+            action: accepted
+                ? `✓ ACCEPTED — ${acceptMode === 'empty_stack' ? 'only Z₀ remains on stack' : 'in final state'}`
+                : `✗ REJECTED — ${acceptMode === 'empty_stack' ? 'stack not properly drained' : 'not in final state'}`
+        });
+    }
+
+    return {
+        accepted,
+        reason: accepted
+            ? `Accepted — ${acceptMode === 'empty_stack' ? 'stack contains only Z₀.' : 'ended in final state.'}`
+            : `Rejected — ${rejected ? 'no valid transition found.' : (acceptMode === 'empty_stack' ? 'stack not drained.' : 'not in final state.')}`,
+        timeline: demoTimeline,
+        finalStack: currentStack,
+    };
+}
+
+// ─── Rebuild edges from transitions ──────────────────────────────────────────
+function buildEdgesFromTransitions(transitions) {
+    const edgeMap = {};
+    for (const t of transitions) {
+        const key = `${t.from}->${t.toState}`;
+        if (!edgeMap[key]) edgeMap[key] = { labels: [], from: t.from, to: t.toState };
+        edgeMap[key].labels.push(`${t.input},${t.stackTop}/${t.pushSymbols}`);
+    }
+    return Object.entries(edgeMap).map(([key, val], i) => ({
+        id: `auto-${i}`,
+        source: val.from,
+        target: val.to,
+        label: val.labels.join('\n'),
+        type: val.from === val.to ? 'self' : undefined,
+        style: {
+            stroke: val.from === val.to ? '#2563EB' : val.to.includes('q2') ? '#22C55E' : '#7C3AED',
+            strokeWidth: 2
+        }
+    }));
+}
+
+// ─── Editable Transition Row ──────────────────────────────────────────────────
+function TransitionRow({ t, onDelete, onUpdate }) {
+    const [editing, setEditing] = useState(false);
+    const [form, setForm] = useState({ ...t });
+
+    const handleSave = () => {
+        onUpdate(t.id, form);
+        setEditing(false);
+    };
+
+    if (editing) {
+        return (
+            <div className="p-2 border border-primary rounded-xl bg-primary/5 text-xs space-y-2">
+                <div className="grid grid-cols-2 gap-1.5">
+                    {[['from', 'From State'], ['input', 'Input'], ['stackTop', 'Stack Top'], ['toState', 'To State'], ['pushSymbols', 'Push Symbols']].map(([key, label]) => (
+                        <div key={key}>
+                            <label className="text-[10px] text-text-secondary">{label}</label>
+                            <input
+                                value={form[key]}
+                                onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+                                className="w-full h-7 px-2 border border-border rounded-md font-mono outline-none focus:border-primary text-xs dark:bg-slate-800 dark:text-white"
+                            />
+                        </div>
+                    ))}
+                </div>
+                <div className="flex gap-1.5">
+                    <button onClick={handleSave} className="flex-1 h-7 bg-primary text-white rounded-md text-xs font-semibold flex items-center justify-center gap-1"><Check size={11} /> Save</button>
+                    <button onClick={() => setEditing(false)} className="flex-1 h-7 border border-border rounded-md text-xs text-text-secondary flex items-center justify-center gap-1"><X size={11} /> Cancel</button>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex items-center gap-2 p-2.5 border border-border rounded-xl bg-gray-50 dark:bg-slate-900/50 text-xs">
+            <div className="flex-1 flex items-center gap-1.5 flex-wrap min-w-0">
+                <span className="font-mono bg-white dark:bg-slate-800 dark:text-white px-2 py-1 rounded-md border border-border font-semibold whitespace-nowrap">
+                    ({t.from}, {t.input}, {t.stackTop})
+                </span>
+                <ArrowRight size={12} className="text-text-secondary flex-shrink-0" />
+                <span className="font-mono bg-white dark:bg-slate-800 dark:text-white px-2 py-1 rounded-md border border-border font-semibold whitespace-nowrap">
+                    ({t.toState}, {t.pushSymbols})
+                </span>
+            </div>
+            <button onClick={() => setEditing(true)} className="text-text-secondary hover:text-primary transition-colors flex-shrink-0 p-1">
+                <Edit2 size={12} />
+            </button>
+            <button onClick={() => onDelete(t.id)} className="text-text-secondary hover:text-red-500 transition-colors flex-shrink-0 p-1">
+                <Trash2 size={13} />
+            </button>
+        </div>
+    );
+}
 
 export default function PDA() {
     const [nodes, setNodes] = useState(initialNodes);
@@ -55,51 +224,42 @@ export default function PDA() {
     const [simResult, setSimResult] = useState(null);
     const [timeline, setTimeline] = useState([]);
     const [currentStep, setCurrentStep] = useState(0);
+    const [toast, setToast] = useState(null);
+
+    const showToast = (msg, type = 'info') => {
+        setToast({ msg, type });
+        setTimeout(() => setToast(null), 2500);
+    };
 
     const onNodesChange = useCallback((changes) => setNodes(nds => applyNodeChanges(changes, nds)), []);
     const onEdgesChange = useCallback((changes) => setEdges(eds => applyEdgeChanges(changes, eds)), []);
     const onConnect = useCallback((params) => setEdges(eds => addEdge({ ...params, style: { stroke: '#2563EB', strokeWidth: 2 } }, eds)), []);
 
+    // Sync edges from transitions whenever transitions change
+    useEffect(() => {
+        setEdges(buildEdgesFromTransitions(transitions));
+    }, [transitions]);
+
     const handleDeleteTransition = (id) => setTransitions(t => t.filter(x => x.id !== id));
-    const handleAddTransition = () => setTransitions(t => [...t, { id: Date.now(), from: 'q0', input: 'a', stackTop: 'Z0', toState: 'q0', pushSymbols: 'AZ0' }]);
+
+    const handleUpdateTransition = (id, newData) => {
+        setTransitions(ts => ts.map(t => t.id === id ? { ...t, ...newData } : t));
+    };
+
+    const handleAddTransition = () => {
+        const newTr = { id: Date.now(), from: 'q0', input: 'a', stackTop: 'Z0', toState: 'q0', pushSymbols: 'AZ0' };
+        setTransitions(t => [...t, newTr]);
+    };
 
     const handleSimulate = () => {
-        if (!testString.trim()) return;
-        const demoTimeline = [];
-        const chars = testString.split('');
-        let currentStack = ['Z0'];
-        let rejected = false;
-
-        demoTimeline.push({ step: 0, state: 'q0', symbol: null, stackSnapshot: [...currentStack], action: 'Initial configuration' });
-
-        for (let i = 0; i < chars.length; i++) {
-            const ch = chars[i];
-            if (ch === 'a') {
-                currentStack = ['A', ...currentStack];
-                demoTimeline.push({ step: i + 1, state: 'q0', symbol: ch, stackSnapshot: [...currentStack], action: `Read 'a' → Push A onto stack` });
-            } else if (ch === 'b') {
-                if (currentStack[0] === 'A') {
-                    currentStack = currentStack.slice(1);
-                    demoTimeline.push({ step: i + 1, state: 'q1', symbol: ch, stackSnapshot: [...currentStack], action: `Read 'b' → Pop A from stack` });
-                } else {
-                    rejected = true;
-                    demoTimeline.push({ step: i + 1, state: 'q1', symbol: ch, stackSnapshot: [...currentStack], action: `Read 'b' → Stack underflow! REJECT` });
-                    break;
-                }
-            }
+        if (testString === '' && acceptMode !== 'empty_stack') {
+            showToast('Please enter a test string.', 'warn');
+            return;
         }
-
-        const accepted = !rejected && (acceptMode === 'empty_stack'
-            ? currentStack.length === 1 && currentStack[0] === 'Z0'
-            : currentStack.length > 0);
-
-        if (!rejected) {
-            demoTimeline.push({ step: demoTimeline.length, state: accepted ? 'q2' : 'q1', symbol: null, stackSnapshot: [...currentStack], action: accepted ? 'Accept by Empty Stack (Z₀ remains) ✓' : 'Reject — stack not drained ✗' });
-        }
-
-        setSimResult({ accepted, reason: accepted ? `Accepted — stack contains only Z₀.` : `Rejected — ${rejected ? "stack underflow" : "stack not drained"}.` });
-        setTimeline(demoTimeline);
-        setStack(currentStack);
+        const result = runPDASimulation(testString, transitions, acceptMode);
+        setSimResult(result);
+        setTimeline(result.timeline);
+        setStack(result.finalStack);
         setCurrentStep(0);
     };
 
@@ -108,6 +268,18 @@ export default function PDA() {
         setSimResult(null);
         setTimeline([]);
         setCurrentStep(0);
+    };
+
+    const handleSave = () => {
+        const data = { transitions, inputAlphabet, stackAlphabet, acceptMode };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'pda-model.json';
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('PDA model saved!', 'success');
     };
 
     const displayStack = timeline.length > 0 && timeline[currentStep]
@@ -126,7 +298,27 @@ export default function PDA() {
     }));
 
     return (
-        <div className="flex flex-col lg:flex-row h-[calc(100vh-64px)] bg-background dark:bg-[#0F172A] overflow-hidden">
+        <div className="flex flex-col lg:flex-row h-[calc(100vh-64px)] bg-background dark:bg-[#0F172A] overflow-hidden relative">
+
+            {/* Toast */}
+            <AnimatePresence>
+                {toast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -40 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -40 }}
+                        className={cn(
+                            "fixed top-20 left-1/2 -translate-x-1/2 z-[200] px-5 py-3 rounded-xl shadow-lg border text-sm font-semibold flex items-center gap-2",
+                            toast.type === 'success' && "bg-green-50 border-green-300 text-green-700",
+                            toast.type === 'error' && "bg-red-50 border-red-300 text-red-700",
+                            toast.type === 'warn' && "bg-yellow-50 border-yellow-300 text-yellow-700",
+                            toast.type === 'info' && "bg-blue-50 border-blue-300 text-blue-700",
+                        )}
+                    >
+                        {toast.msg}
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Left Panel */}
             <aside className="w-full lg:w-[360px] flex-shrink-0 border-r border-border bg-white dark:bg-card-dark overflow-y-auto flex flex-col">
@@ -136,7 +328,8 @@ export default function PDA() {
                         <p className="text-xs text-text-secondary dark:text-slate-300 mt-0.5">Pushdown Automata & Stack Visualization</p>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono bg-primary/10 text-primary px-2 py-1 rounded-md">a^n b^n</span>
+                        <Button variant="ghost" size="icon" title="Save JSON" onClick={handleSave}><Save size={15} /></Button>
+                        <span className="text-xs font-mono bg-primary/10 text-primary px-2 py-1 rounded-md">aⁿbⁿ</span>
                     </div>
                 </div>
 
@@ -172,21 +365,16 @@ export default function PDA() {
                         </div>
                         <div className="space-y-2">
                             {transitions.map(t => (
-                                <div key={t.id} className="flex items-center gap-2 p-2.5 border border-border rounded-xl bg-gray-50 dark:bg-slate-900/50 text-xs">
-                                    <div className="flex-1 flex items-center gap-1.5 flex-wrap min-w-0">
-                                        <span className="font-mono bg-white dark:bg-slate-800 dark:text-white px-2 py-1 rounded-md border border-border font-semibold whitespace-nowrap">
-                                            ({t.from}, {t.input}, {t.stackTop})
-                                        </span>
-                                        <ArrowRight size={12} className="text-text-secondary flex-shrink-0" />
-                                        <span className="font-mono bg-white dark:bg-slate-800 dark:text-white px-2 py-1 rounded-md border border-border font-semibold whitespace-nowrap">
-                                            ({t.toState}, {t.pushSymbols})
-                                        </span>
-                                    </div>
-                                    <button onClick={() => handleDeleteTransition(t.id)} className="text-text-secondary hover:text-red-500 transition-colors flex-shrink-0 p-1">
-                                        <Trash2 size={13} />
-                                    </button>
-                                </div>
+                                <TransitionRow
+                                    key={t.id}
+                                    t={t}
+                                    onDelete={handleDeleteTransition}
+                                    onUpdate={handleUpdateTransition}
+                                />
                             ))}
+                            {transitions.length === 0 && (
+                                <p className="text-xs text-text-secondary text-center py-4">No transitions. Click Add to create one.</p>
+                            )}
                         </div>
                     </section>
                 </div>
@@ -259,22 +447,26 @@ export default function PDA() {
                     <div className="relative w-28 flex flex-col justify-end items-center rounded-xl border-2 border-border bg-gray-50 dark:bg-slate-900/50 overflow-hidden flex-shrink-0">
                         <span className="absolute top-2 left-0 right-0 text-center text-[10px] font-bold text-text-secondary dark:text-slate-400 uppercase tracking-widest">Stack</span>
                         <div className="flex flex-col-reverse w-full px-2 pb-2 gap-1 mt-6 overflow-hidden">
-                            {displayStack.map((symbol, i) => (
-                                <motion.div
-                                    key={`stack-${i}-${symbol}`}
-                                    initial={{ opacity: 0, scaleY: 0 }}
-                                    animate={{ opacity: 1, scaleY: 1 }}
-                                    transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                                    className={cn(
-                                        "w-full h-9 flex items-center justify-center font-mono font-bold text-sm rounded-lg border transition-colors",
-                                        i === displayStack.length - 1
-                                            ? "bg-primary text-white border-primary shadow-md"
-                                            : "bg-white dark:bg-slate-800 dark:text-white border-border"
-                                    )}
-                                >
-                                    {symbol}
-                                </motion.div>
-                            ))}
+                            {displayStack.length === 0 ? (
+                                <div className="text-center text-xs text-text-secondary py-2">Empty</div>
+                            ) : (
+                                displayStack.map((symbol, i) => (
+                                    <motion.div
+                                        key={`stack-${i}-${symbol}`}
+                                        initial={{ opacity: 0, scaleY: 0 }}
+                                        animate={{ opacity: 1, scaleY: 1 }}
+                                        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                                        className={cn(
+                                            "w-full h-9 flex items-center justify-center font-mono font-bold text-sm rounded-lg border transition-colors",
+                                            i === displayStack.length - 1
+                                                ? "bg-primary text-white border-primary shadow-md"
+                                                : "bg-white dark:bg-slate-800 dark:text-white border-border"
+                                        )}
+                                    >
+                                        {symbol}
+                                    </motion.div>
+                                ))
+                            )}
                         </div>
                     </div>
 
@@ -284,13 +476,19 @@ export default function PDA() {
                             <h4 className="text-xs font-bold text-text-secondary dark:text-slate-400 uppercase tracking-widest">Execution Log</h4>
                             {timeline.length > 0 && (
                                 <div className="flex items-center gap-1">
-                                    <button onClick={() => setCurrentStep(s => Math.max(0, s - 1))} disabled={currentStep <= 0}
-                                        className="p-1 rounded-md bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 disabled:opacity-40 transition-colors">
+                                    <button
+                                        onClick={() => setCurrentStep(s => Math.max(0, s - 1))}
+                                        disabled={currentStep <= 0}
+                                        className="p-1 rounded-md bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 disabled:opacity-40 transition-colors"
+                                    >
                                         <SkipBack size={12} />
                                     </button>
                                     <span className="text-[10px] text-text-secondary dark:text-slate-400 font-mono px-1">{currentStep + 1}/{timeline.length}</span>
-                                    <button onClick={() => setCurrentStep(s => Math.min(timeline.length - 1, s + 1))} disabled={currentStep >= timeline.length - 1}
-                                        className="p-1 rounded-md bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 disabled:opacity-40 transition-colors">
+                                    <button
+                                        onClick={() => setCurrentStep(s => Math.min(timeline.length - 1, s + 1))}
+                                        disabled={currentStep >= timeline.length - 1}
+                                        className="p-1 rounded-md bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 disabled:opacity-40 transition-colors"
+                                    >
                                         <SkipForward size={12} />
                                     </button>
                                 </div>

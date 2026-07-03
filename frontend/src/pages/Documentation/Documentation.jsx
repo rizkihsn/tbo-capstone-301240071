@@ -45,14 +45,14 @@ const docsContent = {
         render: () => (
             <div className="space-y-8">
                 <p className="text-text-secondary leading-relaxed">Get AutomataLab running on your machine in under 2 minutes.</p>
-                <h2 className="doc-h2">Prerequisites</h2>
+                <h2 id="prerequisites" className="doc-h2">Prerequisites</h2>
                 <p className="text-text-secondary text-sm">You need the following installed on your system:</p>
                 <ul className="list-disc ml-6 space-y-1 text-sm text-text-secondary">
                     <li>Node.js v18 or higher</li>
                     <li>npm v9 or higher</li>
                     <li>Git</li>
                 </ul>
-                <h2 className="doc-h2">Running Locally</h2>
+                <h2 id="running-locally" className="doc-h2">Running Locally</h2>
                 <CodeBlock>{`# 1. Clone the repository
 git clone https://github.com/your-repo/automatalab.git
 
@@ -66,7 +66,7 @@ npm install
 npm run dev
 
 # App is now running at http://localhost:5173`}</CodeBlock>
-                <h2 className="doc-h2">Project Structure</h2>
+                <h2 id="project-structure" className="doc-h2">Project Structure</h2>
                 <CodeBlock>{`frontend/
 ├── src/
 │   ├── components/    # Reusable UI components
@@ -84,7 +84,7 @@ npm run dev
         render: () => (
             <div className="space-y-8">
                 <p className="text-text-secondary leading-relaxed">AutomataLab is a fully client-side Single Page Application (SPA) built on a modern React stack.</p>
-                <h2 className="doc-h2">Technology Stack</h2>
+                <h2 id="technology-stack" className="doc-h2">Technology Stack</h2>
                 <div className="overflow-x-auto rounded-xl border border-border">
                     <table className="w-full text-sm">
                         <thead className="bg-gray-50 dark:bg-slate-800/50 text-text-secondary uppercase text-xs font-semibold">
@@ -113,7 +113,7 @@ npm run dev
                         </tbody>
                     </table>
                 </div>
-                <h2 className="doc-h2">Simulation Engines</h2>
+                <h2 id="simulation-engines" className="doc-h2">Simulation Engines</h2>
                 <p className="text-text-secondary text-sm">All automata algorithms run in <strong>pure JavaScript</strong> inside the browser, inside <code className="text-primary text-xs bg-primary/10 px-1.5 py-0.5 rounded">src/services/simulation/</code>:</p>
                 <CodeBlock>{`src/services/simulation/
 ├── dfaEngine.js    # DFA & NFA simulation (ε-closure, simulate())
@@ -130,7 +130,7 @@ npm run dev
                 <p className="text-text-secondary leading-relaxed">
                     An <strong className="text-text-primary">automaton</strong> (plural: automata) is an abstract mathematical model of a computing machine. It reads an input string symbol by symbol and transitions between states according to a set of rules, ultimately deciding whether to <strong>accept</strong> or <strong>reject</strong> the input.
                 </p>
-                <h2 className="doc-h2">Formal Definition</h2>
+                <h2 id="formal-definition" className="doc-h2">Formal Definition</h2>
                 <p className="text-text-secondary text-sm">A Deterministic Finite Automaton (DFA) is formally defined as a 5-tuple:</p>
                 <div className="p-5 bg-gray-900 rounded-xl border border-border font-mono text-sm text-gray-200">
                     <p>M = (Q, Σ, δ, q₀, F)</p>
@@ -153,7 +153,7 @@ npm run dev
         render: () => (
             <div className="space-y-8">
                 <p className="text-text-secondary leading-relaxed">A <strong className="text-text-primary">formal language</strong> is a set of strings over a given alphabet Σ. The study of formal languages is central to compiler design, text processing, and theoretical computer science.</p>
-                <h2 className="doc-h2">Language Operations</h2>
+                <h2 id="language-operations" className="doc-h2">Language Operations</h2>
                 <div className="space-y-3">
                     {[
                         ["Union", "L₁ ∪ L₂", "All strings in L₁ or L₂ (or both)."],
@@ -218,7 +218,7 @@ npm run dev
         render: () => (
             <div className="space-y-8">
                 <p className="text-text-secondary leading-relaxed">The DFA Simulator allows you to construct a Deterministic or Non-Deterministic Finite Automaton visually and test input strings against it in real time.</p>
-                <h2 className="doc-h2">How to Use</h2>
+                <h2 id="how-to-use" className="doc-h2">How to Use</h2>
                 <ol className="space-y-4">
                     {[
                         ["Define the Alphabet (Σ)", "In the left panel, set the input alphabet. Use comma-separated symbols, e.g., a, b."],
@@ -236,7 +236,7 @@ npm run dev
                         </div>
                     ))}
                 </ol>
-                <h2 className="doc-h2">Example: Strings ending in 'abb'</h2>
+                <h2 id="example-strings-ending-in-abb" className="doc-h2">Example: Strings ending in 'abb'</h2>
                 <CodeBlock>{`States (Q)   = { q0, q1 ★ }
 Alphabet (Σ) = { a, b }
 Initial State = q0
@@ -257,7 +257,7 @@ Test: "abba" → ACCEPTED (reaches q1)`}</CodeBlock>
         render: () => (
             <div className="space-y-8">
                 <p className="text-text-secondary leading-relaxed">The Regex Studio allows you to write Regular Expressions, test strings against them, and visualize the conversion pipeline from Regex → NFA → DFA → Minimized DFA.</p>
-                <h2 className="doc-h2">Supported Syntax</h2>
+                <h2 id="supported-syntax" className="doc-h2">Supported Syntax</h2>
                 <div className="overflow-x-auto rounded-xl border border-border">
                     <table className="w-full text-sm">
                         <thead className="bg-gray-50 dark:bg-slate-800/50 text-text-secondary uppercase text-xs font-semibold">
@@ -293,7 +293,7 @@ Test: "abba" → ACCEPTED (reaches q1)`}</CodeBlock>
         render: () => (
             <div className="space-y-8">
                 <p className="text-text-secondary leading-relaxed">The PDA Builder simulates a Pushdown Automaton, which is a finite automaton augmented with an infinite stack memory — allowing it to recognize Context-Free Languages.</p>
-                <h2 className="doc-h2">Transition Function Format</h2>
+                <h2 id="transition-function-format" className="doc-h2">Transition Function Format</h2>
                 <p className="text-text-secondary text-sm">Each PDA transition is written as:</p>
                 <div className="p-4 bg-gray-900 rounded-xl border border-border font-mono text-sm text-gray-200">
                     <p className="text-yellow-400">(currentState, inputSymbol, stackTop) → (nextState, pushSymbols)</p>
@@ -304,7 +304,7 @@ Test: "abba" → ACCEPTED (reaches q1)`}</CodeBlock>
                         <p>         — Read 'b', pop A, push nothing (ε = empty)</p>
                     </div>
                 </div>
-                <h2 className="doc-h2">Acceptance Modes</h2>
+                <h2 id="acceptance-modes" className="doc-h2">Acceptance Modes</h2>
                 <div className="space-y-3">
                     <div className="p-4 rounded-xl border border-success/30 bg-success/5">
                         <h3 className="font-semibold text-success text-sm mb-1">Accept by Empty Stack</h3>
@@ -323,7 +323,7 @@ Test: "abba" → ACCEPTED (reaches q1)`}</CodeBlock>
         render: () => (
             <div className="space-y-8">
                 <p className="text-text-secondary leading-relaxed">The CFG to CNF Converter transforms any Context-Free Grammar into Chomsky Normal Form through a systematic 5-step process. CNF is required for algorithms like the CYK parsing algorithm.</p>
-                <h2 className="doc-h2">The 5 Transformation Steps</h2>
+                <h2 id="the-5-transformation-steps" className="doc-h2">The 5 Transformation Steps</h2>
                 <div className="space-y-3">
                     {[
                         ["Step 1", "Remove ε-Productions", "Find all nullable variables (X → ε). For every rule containing that variable, add a new rule without it. Remove X → ε."],
@@ -341,7 +341,7 @@ Test: "abba" → ACCEPTED (reaches q1)`}</CodeBlock>
                         </div>
                     ))}
                 </div>
-                <h2 className="doc-h2">CNF Rules</h2>
+                <h2 id="cnf-rules" className="doc-h2">CNF Rules</h2>
                 <p className="text-text-secondary text-sm">A grammar G is in Chomsky Normal Form if every production rule is of exactly one of these two forms:</p>
                 <CodeBlock>{`A → BC    (exactly two non-terminals)
 A → a     (exactly one terminal)
@@ -356,14 +356,14 @@ Where A, B, C are non-terminals and B ≠ S, C ≠ S
         render: () => (
             <div className="space-y-8">
                 <p className="text-text-secondary leading-relaxed">The AutomataLab REST API is built with Flask and follows standard RESTful conventions. All responses use a unified JSON envelope.</p>
-                <h2 className="doc-h2">Response Format</h2>
+                <h2 id="response-format" className="doc-h2">Response Format</h2>
                 <CodeBlock>{`{
   "success": true | false,
   "message": "Human-readable description",
   "data": { ... } | null,
   "errors": null | ["error message"]
 }`}</CodeBlock>
-                <h2 className="doc-h2">DFA Endpoints</h2>
+                <h2 id="dfa-endpoints" className="doc-h2">DFA Endpoints</h2>
                 <div className="space-y-4">
                     {[
                         { method: "POST", path: "/api/v1/dfa/validate", desc: "Validates the structural integrity of a DFA definition." },
@@ -578,16 +578,23 @@ export default function Documentation() {
                 <div className="p-5">
                     <h4 className="text-[11px] font-bold text-text-secondary uppercase tracking-widest mb-4">On this page</h4>
                     <nav className="space-y-1.5">
-                        {pageData.toc.map(item => (
-                            <a
-                                key={item}
-                                href="#"
-                                className="block text-xs text-text-secondary hover:text-primary transition-colors py-0.5"
-                                onClick={e => e.preventDefault()}
-                            >
-                                {item}
-                            </a>
-                        ))}
+                        {pageData.toc.map(item => {
+                            const id = item.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                            return (
+                                <a
+                                    key={item}
+                                    href={`#${id}`}
+                                    className="block text-xs text-text-secondary hover:text-primary transition-colors py-0.5"
+                                    onClick={e => {
+                                        e.preventDefault();
+                                        const el = document.getElementById(id);
+                                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                                    }}
+                                >
+                                    {item}
+                                </a>
+                            );
+                        })}
                     </nav>
                 </div>
             </aside>
