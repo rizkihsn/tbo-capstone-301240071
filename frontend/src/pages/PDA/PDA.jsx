@@ -159,7 +159,7 @@ function buildEdgesFromTransitions(transitions) {
 }
 
 // ─── Editable Transition Row ──────────────────────────────────────────────────
-function TransitionRow({ t, onDelete, onUpdate }) {
+function TransitionRow({ t, stateList, inputSymbols, stackSymbols, onDelete, onUpdate }) {
     const [editing, setEditing] = useState(false);
     const [form, setForm] = useState({ ...t });
 
@@ -168,20 +168,37 @@ function TransitionRow({ t, onDelete, onUpdate }) {
         setEditing(false);
     };
 
+    const fieldSelect = (key, label, options, allowEpsilon = false) => (
+        <div key={key}>
+            <label className="text-[10px] text-text-secondary block mb-0.5">{label}</label>
+            <select
+                value={form[key]}
+                onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+                className="w-full h-7 px-1.5 border border-border rounded-md font-mono text-xs outline-none focus:border-primary dark:bg-slate-800 dark:text-white"
+            >
+                {allowEpsilon && <option value="ε">ε (epsilon)</option>}
+                {options.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+        </div>
+    );
+
     if (editing) {
         return (
             <div className="p-2 border border-primary rounded-xl bg-primary/5 text-xs space-y-2">
                 <div className="grid grid-cols-2 gap-1.5">
-                    {[['from', 'From State'], ['input', 'Input'], ['stackTop', 'Stack Top'], ['toState', 'To State'], ['pushSymbols', 'Push Symbols']].map(([key, label]) => (
-                        <div key={key}>
-                            <label className="text-[10px] text-text-secondary">{label}</label>
-                            <input
-                                value={form[key]}
-                                onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
-                                className="w-full h-7 px-2 border border-border rounded-md font-mono outline-none focus:border-primary text-xs dark:bg-slate-800 dark:text-white"
-                            />
-                        </div>
-                    ))}
+                    {fieldSelect('from', 'From State', stateList)}
+                    {fieldSelect('input', 'Input Symbol', inputSymbols, true)}
+                    {fieldSelect('stackTop', 'Stack Top', stackSymbols)}
+                    {fieldSelect('toState', 'To State', stateList)}
+                    <div>
+                        <label className="text-[10px] text-text-secondary block mb-0.5">Push Symbols</label>
+                        <input
+                            value={form.pushSymbols}
+                            onChange={e => setForm(f => ({ ...f, pushSymbols: e.target.value }))}
+                            placeholder="e.g. AZ0 or ε"
+                            className="w-full h-7 px-2 border border-border rounded-md font-mono outline-none focus:border-primary text-xs dark:bg-slate-800 dark:text-white"
+                        />
+                    </div>
                 </div>
                 <div className="flex gap-1.5">
                     <button onClick={handleSave} className="flex-1 h-7 bg-primary text-white rounded-md text-xs font-semibold flex items-center justify-center gap-1"><Check size={11} /> Save</button>
@@ -215,6 +232,8 @@ function TransitionRow({ t, onDelete, onUpdate }) {
 export default function PDA() {
     const [nodes, setNodes] = useState(initialNodes);
     const [edges, setEdges] = useState(initialEdges);
+    const [pdaStates, setPdaStates] = useState(['q0', 'q1', 'q2']);
+    const [finalStates, setFinalStates] = useState(['q2']);
     const [inputAlphabet, setInputAlphabet] = useState('a, b');
     const [stackAlphabet, setStackAlphabet] = useState('A, Z0');
     const [testString, setTestString] = useState('aabb');
@@ -225,6 +244,23 @@ export default function PDA() {
     const [timeline, setTimeline] = useState([]);
     const [currentStep, setCurrentStep] = useState(0);
     const [toast, setToast] = useState(null);
+
+    const inputSymbolList = inputAlphabet.split(',').map(s => s.trim()).filter(Boolean);
+    const stackSymbolList = stackAlphabet.split(',').map(s => s.trim()).filter(Boolean);
+
+    const handleAddPdaState = () => {
+        const newId = `q${pdaStates.length}`;
+        const existing = pdaStates.find(s => s === newId);
+        const id = existing ? `q${Date.now()}` : newId;
+        setPdaStates(prev => [...prev, id]);
+        setNodes(ns => [...ns, makeNode(id, 80 + ns.length * 200, 160)]);
+    };
+
+    const handleDeletePdaState = (s) => {
+        setPdaStates(prev => prev.filter(x => x !== s));
+        setNodes(ns => ns.filter(n => n.id !== s));
+        setTransitions(ts => ts.filter(t => t.from !== s && t.toState !== s));
+    };
 
     const showToast = (msg, type = 'info') => {
         setToast({ msg, type });
@@ -247,7 +283,10 @@ export default function PDA() {
     };
 
     const handleAddTransition = () => {
-        const newTr = { id: Date.now(), from: 'q0', input: 'a', stackTop: 'Z0', toState: 'q0', pushSymbols: 'AZ0' };
+        const firstState = pdaStates[0] || 'q0';
+        const firstInput = inputSymbolList[0] || 'a';
+        const firstStack = stackSymbolList[0] || 'Z0';
+        const newTr = { id: Date.now(), from: firstState, input: firstInput, stackTop: firstStack, toState: firstState, pushSymbols: firstStack };
         setTransitions(t => [...t, newTr]);
     };
 
@@ -349,6 +388,24 @@ export default function PDA() {
                             </div>
                         </div>
                         <div className="mt-3">
+                            <div className="flex justify-between items-center mb-2">
+                                <label className="text-xs font-semibold text-text-secondary dark:text-slate-300">States (Q)</label>
+                                <button onClick={handleAddPdaState} className="text-xs flex items-center gap-1 text-primary hover:underline"><Plus size={11}/> Add State</button>
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                                {pdaStates.map(s => (
+                                    <div key={s} className="flex items-center gap-1 px-2 py-1 bg-gray-50 dark:bg-slate-800 border border-border rounded-md text-xs font-mono">
+                                        <span>{s}</span>
+                                        <button
+                                            onClick={() => handleDeletePdaState(s)}
+                                            className="text-text-secondary hover:text-red-500 ml-0.5"
+                                        ><Trash2 size={10} /></button>
+                                    </div>
+                                ))}
+                            </div>
+                            <p className="text-[11px] text-text-secondary mt-2">States are used as options in transition dropdowns below.</p>
+                        </div>
+                        <div className="mt-3">
                             <label className="text-xs font-semibold text-text-secondary dark:text-slate-300 mb-1 block">Acceptance Mode</label>
                             <select value={acceptMode} onChange={e => setAcceptMode(e.target.value)}
                                 className="w-full h-9 px-3 rounded-lg border border-border bg-white dark:bg-slate-800 dark:text-white text-sm outline-none focus:border-primary transition-colors">
@@ -368,6 +425,9 @@ export default function PDA() {
                                 <TransitionRow
                                     key={t.id}
                                     t={t}
+                                    stateList={pdaStates}
+                                    inputSymbols={inputSymbolList}
+                                    stackSymbols={stackSymbolList}
                                     onDelete={handleDeleteTransition}
                                     onUpdate={handleUpdateTransition}
                                 />

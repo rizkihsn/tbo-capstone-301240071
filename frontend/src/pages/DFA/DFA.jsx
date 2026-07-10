@@ -279,7 +279,39 @@ function DFAInner() {
                                             <td className="px-3 py-2 font-mono font-bold text-text-primary dark:text-white">{i === 0 ? '→ ' : ''}{n.data.label}</td>
                                             {alphabet.split(',').map(s => s.trim()).filter(Boolean).map(sym => {
                                                 const edge = edges.find(e => e.source === n.id && e.label && e.label.split(',').map(x => x.trim()).includes(sym));
-                                                return <td key={sym} className="px-3 py-2 font-mono text-text-secondary">{edge ? edge.target : '–'}</td>;
+                                                const currentTarget = edge ? edge.target : '';
+                                                return (
+                                                    <td key={sym} className="px-2 py-1">
+                                                        <select
+                                                            value={currentTarget}
+                                                            onChange={ev => {
+                                                                const newTarget = ev.target.value;
+                                                                setEdges(eds => {
+                                                                    // Remove existing edge for this source+symbol
+                                                                    const filtered = eds.filter(e => !(e.source === n.id && e.label && e.label.split(',').map(x => x.trim()).includes(sym)));
+                                                                    if (!newTarget) return filtered;
+                                                                    // Add new edge
+                                                                    const newEdge = {
+                                                                        id: `e-${n.id}-${sym}-${newTarget}-${Date.now()}`,
+                                                                        source: n.id,
+                                                                        target: newTarget,
+                                                                        label: sym,
+                                                                        animated: false,
+                                                                        style: { stroke: '#2563EB', strokeWidth: 2 },
+                                                                        type: n.id === newTarget ? 'self' : undefined,
+                                                                    };
+                                                                    return [...filtered, newEdge];
+                                                                });
+                                                            }}
+                                                            className="w-full font-mono text-xs bg-gray-50 dark:bg-slate-800 border border-border rounded px-1.5 py-1 text-text-primary dark:text-white outline-none focus:border-primary cursor-pointer"
+                                                        >
+                                                            <option value="">–</option>
+                                                            {nodes.map(opt => (
+                                                                <option key={opt.id} value={opt.id}>{opt.data.label}</option>
+                                                            ))}
+                                                        </select>
+                                                    </td>
+                                                );
                                             })}
                                         </tr>
                                     ))}
